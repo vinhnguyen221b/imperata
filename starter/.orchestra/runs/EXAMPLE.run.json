@@ -1,0 +1,47 @@
+{
+  "runId": "EXAMPLE",
+  "title": "Example feature",
+  "productDocVersion": "1.0",
+  "ticketRef": "local:EXAMPLE-1",
+  "dependsOn": [],
+  "currentStage": "ANALYSIS",
+  "revision": 0,
+  "owner": "demo-product-owner",
+  "updatedAt": "2026-11-10T00:00:00Z",
+  "approvalMode": "local-record",
+  "track": "full",
+  "trackDecision": null,
+  "approvals": {
+    "businessApproval": null,
+    "planApproval": null,
+    "humanAcceptance": null
+  },
+  "artifactPaths": {
+    "input": "sdlc/runs/EXAMPLE/input.md",
+    "spec": null,
+    "plan": null,
+    "testPlan": null,
+    "testReport": null,
+    "testLock": null,
+    "testCalibration": null,
+    "review": null,
+    "delivery": null
+  },
+  "gateResults": {
+    "businessApproval": "NOT_RUN",
+    "planApproval": "NOT_RUN",
+    "implementation": "NOT_RUN",
+    "tests": "NOT_RUN",
+    "review": "NOT_RUN",
+    "humanAcceptance": "NOT_RUN"
+  },
+  "openBlockers": [
+    "Business rules awaiting clarification"
+  ],
+  "externalEvidence": {
+    "prUrl": null,
+    "prMerged": false,
+    "trackerStatusVerified": false,
+    "ci": null
+  }
+}

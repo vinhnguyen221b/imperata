@@ -1,0 +1,116 @@
+# Publishes a release of the kit when a tag v<version> is pushed (KIT_GUIDE.md, "Update a repository").
+#
+# The kit's tests run on each Node it supports. Then the tag is checked against kit.json, CHANGELOG.md and main,
+# and the tagged commit is packed with git archive. The archive, its SHA256SUMS and an attestation of where it was
+# built go onto a draft release, which is published only once all of them are there. The last step downloads what
+# was published and verifies it as a user would.
+#
+# What this proves: the archive was built here, by this workflow, from the tagged commit. It does not prove that
+# the code is safe; read it, and run the installer with --dry-run first.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --test tests/*.test.mjs
+
+  release:
+    needs: test
+    if: github.repository == 'vinhnguyen221b/imperata'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write          # create and publish the release
+      id-token: write          # sign the attestation
+      attestations: write      # store the attestation
+      artifact-metadata: write # record the archive the attestation is about
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check the tag against kit.json, CHANGELOG.md and main
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./kit.json').version")
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::The tag $GITHUB_REF_NAME does not name the version in kit.json ($version)."
+            exit 1
+          fi
+          if ! grep -qF -- "- **Kit $version (" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no entry for $version."
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::The tag $GITHUB_REF_NAME is on a commit that is not on main."
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Pack the tagged commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir dist
+          git archive --format=tar.gz --prefix="imperata-$VERSION/" -o "dist/imperata-$VERSION.tar.gz" HEAD
+          (cd dist && sha256sum "imperata-$VERSION.tar.gz" > SHA256SUMS)
+          cat dist/SHA256SUMS
+
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: dist/imperata-${{ env.VERSION }}.tar.gz
+
+      - name: Publish the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          awk -v head="- **Kit $VERSION (" '
+            index($0, head) == 1 { on = 1; print; next }
+            on && /^- \*\*Kit / { exit }
+            on { print }' CHANGELOG.md > notes.md
+          printf '\nCommit: `%s`\n' "$(git rev-parse HEAD)" >> notes.md
+          gh release create "$GITHUB_REF_NAME" --draft --verify-tag --title "Imperata $VERSION" --notes-file notes.md \
+            "dist/imperata-$VERSION.tar.gz" dist/SHA256SUMS
+          gh release edit "$GITHUB_REF_NAME" --draft=false --latest
+
+      - name: Verify what was published, as a user would
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for try in 1 2 3 4 5; do
+            gh release verify "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" && break
+            [ "$try" = 5 ] && exit 1
+            sleep 15
+          done
+          gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --dir published
+          (cd published && sha256sum -c SHA256SUMS)
+          gh release verify-asset "$GITHUB_REF_NAME" "published/imperata-$VERSION.tar.gz" --repo "$GITHUB_REPOSITORY"
+          gh attestation verify "published/imperata-$VERSION.tar.gz" --repo "$GITHUB_REPOSITORY"

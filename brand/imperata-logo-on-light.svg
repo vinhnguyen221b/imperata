@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 160" role="img" aria-labelledby="title desc">
+  <title id="title">Imperata</title>
+  <desc id="desc">The Imperata symbol, a broken dark hexagon round an I with a red point below, beside the word IMPERATA.</desc>
+  <g transform="translate(4 4) scale(.56)">
+    <g fill="none" stroke="#1A1A19" stroke-width="13" stroke-linecap="butt" stroke-linejoin="miter">
+      <path d="M119 26 42 72v40"/>
+      <path d="M42 133v49l77 45"/>
+      <path d="m137 26 77 46v40"/>
+      <path d="M214 133v49l-77 45"/>
+    </g>
+    <path fill="#1A1A19" d="M100 76h56l-6 12h-11v82h11l6 12h-56l6-12h11V88h-11z"/>
+    <path fill="#E84C3D" d="m118 217 10 25 10-25z"/>
+  </g>
+  <g fill="#1A1A19" fill-rule="evenodd" transform="translate(160 44)">
+    <path d="M0 0h40l-4 9h-9v54h9l4 9H0l4-9h9V9H4z"/>
+    <path transform="translate(50 0)" d="M0 0h18l18 28 18-28h18v72H56V30L36 58 16 30v42H0z"/>
+    <path transform="translate(132 0)" d="M0 0h48l10 10v24l-10 10H16v28H0zM16 13h28v18H16z"/>
+    <path transform="translate(200 0)" d="M0 0h52v13H16v16h30v13H16v17h36v13H0z"/>
+    <path transform="translate(262 0)" d="M0 0h48l10 10v22l-8 8 10 32H42l-9-30H16v30H0zM16 13h28v16H16z"/>
+    <path transform="translate(332 0)" d="M24 0h18l24 72H49l-5-15H22l-5 15H0zM26 44h14l-7-23z"/>
+    <path transform="translate(406 0)" d="M0 0h58v13H37v59H21V13H0z"/>
+    <path transform="translate(472 0)" d="M24 0h18l24 72H49l-5-15H22l-5 15H0zM26 44h14l-7-23z"/>
+  </g>
+</svg>

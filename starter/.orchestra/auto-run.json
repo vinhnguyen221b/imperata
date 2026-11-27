@@ -1,0 +1,48 @@
+{
+  "about": "Read by scripts/board-server.mjs when it is started with --auto-run claude or --auto-run copilot. After each Send it starts a fresh, non-interactive Orchestrator session that may use the tools listed for that tool. Allow rules in your own settings of Claude Code or Copilot apply to it as well, so keep those narrow. In a non-interactive session every other tool call is denied, not asked: writes outside sdlc/, commits, pushes, pull requests and application code stay with a person. scripts/record-run.mjs is in the lists and refuses --commit in a session the board server started. Widen a list only knowing that nobody is there to approve: git log and git diff, for example, write a file with --output, and a bare Read would let the session read files outside the repository. To refuse such reads whatever the rules say, set permissions.blockReadsOutsideWorkingDirectories to true in your settings of Claude Code. For Claude Code, echo is in the list so that a command followed by echo \"exit=$?\" is not denied; where a redirect writes is still held to the Edit rule.",
+  "maxBudgetUsd": 15,
+  "claude": {
+    "agent": "sdlc-orchestrator",
+    "model": null,
+    "allowedTools": [
+      "Edit(sdlc/**)",
+      "Read(./**)",
+      "Grep",
+      "Glob",
+      "Skill",
+      "Agent",
+      "Bash(node scripts/validate-gates.mjs *)",
+      "Bash(node scripts/render-run-board.mjs *)",
+      "Bash(node scripts/render-run-board.mjs)",
+      "Bash(node scripts/record-run.mjs *)",
+      "Bash(git status *)",
+      "Bash(git status)",
+      "Bash(git branch --show-current)",
+      "Bash(git rev-parse *)",
+      "Bash(ls *)",
+      "Bash(ls)",
+      "Bash(date -u +%Y-%m-%dT%H:%M:%SZ)",
+      "Bash(date)",
+      "Bash(echo *)"
+    ]
+  },
+  "copilot": {
+    "agent": "sdlc-orchestrator",
+    "model": null,
+    "denyTool": [
+      "write(sdlc/runs/*/decisions/**)"
+    ],
+    "allowTool": [
+      "read",
+      "write(sdlc/**)",
+      "shell(node scripts/validate-gates.mjs:*)",
+      "shell(node scripts/render-run-board.mjs:*)",
+      "shell(node scripts/record-run.mjs:*)",
+      "shell(git status:*)",
+      "shell(git branch --show-current)",
+      "shell(git rev-parse:*)",
+      "shell(ls:*)",
+      "shell(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    ]
+  }
+}

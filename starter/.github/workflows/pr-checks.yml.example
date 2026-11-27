@@ -1,0 +1,133 @@
+# Example only. GitHub does not run this file while its name ends in ".example".
+# To use it: rename to pr-checks.yml, replace every command marked REPLACE with the repository's real
+# command, and pin the actions to the versions your organization allows.
+# Check its first run in your repository: a permission your organization withholds, or a command left
+# unreplaced, shows there.
+#
+# Purpose: test evidence comes from this runner, not from an agent's report. Make both jobs
+# required checks on the main branch so a pull request cannot be merged while either fails.
+# The gate validator holds the delivery pull request to the job named "Build and test" with
+# --require-check: rename both together, and a skipped run of that job does not count.
+
+name: PR checks
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+  statuses: read
+  # The validator's --verify-remote runs gh pr view --json statusCheckRollup, which reads the workflow run behind
+  # each check. Without this the token is refused ("Resource not accessible by integration") once a gate is recorded.
+  actions: read
+
+concurrency:
+  group: pr-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install
+        run: npm ci # REPLACE
+      - name: Typecheck
+        run: npm run typecheck # REPLACE
+      - name: Lint
+        run: npm run lint # REPLACE
+      - name: Unit and API tests
+        run: npm test # REPLACE
+      - name: End-to-end tests
+        run: npx playwright test # REPLACE, or remove when the change has no UI flow
+      - name: Keep test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+
+  imperata-gates:
+    name: Imperata gates
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The pull request's own head, not the merge commit, and with history:
+          # the validator compares the tested commit with HEAD.
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate every run manifest, and check that its board is current
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          # The validator and the renderer come from the base branch when it has them: a pull request that changes
+          # them does not judge itself with its own copy. The first pull request, which installs the kit, uses its own.
+          tools="$RUNNER_TEMP/imperata"
+          mkdir -p "$tools"
+          for script in validate-gates render-run-board; do
+            if git cat-file -e "$BASE_SHA:scripts/$script.mjs" 2>/dev/null; then
+              git show "$BASE_SHA:scripts/$script.mjs" > "$tools/$script.mjs"
+            else
+              echo "::warning::scripts/$script.mjs is not on the base branch; this pull request is checked with its own copy"
+              cp "scripts/$script.mjs" "$tools/$script.mjs"
+            fi
+          done
+          status=0
+          while IFS= read -r -d '' manifest; do
+            [ -f "$manifest" ] || continue
+            run_folder="$(basename "$(dirname "$manifest")")"
+            case "$run_folder" in
+              *[!A-Za-z0-9._-]*) echo "::error::unexpected name of a run folder: $run_folder"; status=1; continue ;;
+            esac
+            echo "::group::$manifest"
+            node "$tools/validate-gates.mjs" "$manifest" --verify-remote --ignore-check "Imperata gates" --require-check "Build and test" || status=1
+            node "$tools/render-run-board.mjs" --check --run "$run_folder" || status=1
+            echo "::endgroup::"
+          # Every run, not only those whose manifest this pull request changes: a change to a locked test is caught
+          # by the run it belongs to. A document a gate approved is held to its approved version in local-record mode
+          # only; in pull-request mode the validator does not compare it with what its pull request merged, and the
+          # change shows only in the diff of this pull request.
+          done < <(git ls-files -z -- 'sdlc/runs/*/run.json')
+          # A run whose manifest this pull request deletes is not in the loop above, and its locked tests could then
+          # change unseen: a pull request that deletes a run's run.json and weakens the run's locked test would pass
+          # this job. Such a deletion fails the job, unless the run reads DONE or CANCELLED on the base branch and
+          # its whole folder goes with the manifest: the cleanup of a finished run.
+          # This cannot tell whether removing a finished run was wanted; the diff of this pull request shows it.
+          while IFS= read -r -d '' gone; do
+            run_folder="${gone#sdlc/runs/}"
+            run_folder="${run_folder%/run.json}"
+            case "$gone" in sdlc/runs/*/run.json) ;; *) continue ;; esac
+            case "$run_folder" in */*|'') continue ;; esac
+            [ -f "$gone" ] && continue
+            case "$run_folder" in
+              *[!A-Za-z0-9._-]*) echo "::error::unexpected name of a run folder on the base branch: $run_folder"; status=1; continue ;;
+            esac
+            stage="$(git show "$BASE_SHA:$gone" | node -e 'let s = ""; process.stdin.on("data", (d) => { s += d; }).on("end", () => { try { console.log(JSON.parse(s.replace(/^\uFEFF/, "")).currentStage || ""); } catch { console.log(""); } });')"
+            if [ -n "$(git ls-files -- "sdlc/runs/$run_folder/")" ]; then
+              echo "::error::this pull request deletes sdlc/runs/$run_folder/run.json and keeps the rest of the run's folder: the run would no longer be checked"
+              status=1
+            elif [ "$stage" != "DONE" ] && [ "$stage" != "CANCELLED" ]; then
+              echo "::error::this pull request deletes run $run_folder, which is ${stage:-unreadable} on the base branch: only a DONE or CANCELLED run is removed, with its whole folder"
+              status=1
+            else
+              echo "Run $run_folder, $stage on the base branch, is removed with its folder."
+            fi
+          done < <(git ls-tree -r -z --name-only "$BASE_SHA" -- sdlc/runs)
+          exit $status

@@ -1,0 +1,7 @@
+---
+name: imperata-preflight
+description: Read-only check that the Imperata kit can run under this Claude Code installation and account. Send it in a plain claude session, not the Orchestrator, before the first run and again before moving to an organization-managed account.
+disable-model-invocation: true
+---
+
+You are auditing whether this repository's Imperata kit can run under this Claude Code installation and account. Do not change repository state or external tools. Check: that the seven agents in `.claude/agents/` are loaded and that `sdlc-orchestrator` may delegate to exactly the six specialists; that the eight `imperata-*` commands are in `.claude/skills/`; that the permission rules and the hooks in `.claude/settings.json` are active and that the hook scripts in `.claude/hooks/` exist; that `scripts/validate-gates.mjs` and `.orchestra/` are present; which MCP servers are visible and approved; the repository's test commands; whether the `gh` CLI is installed and signed in; whether branch protection and required checks exist on the main branch; whether GitHub Actions may run in this repository; and whether any managed (organization) settings restrict subagents, hooks, MCP servers or permission modes. Return an ALLOWED/BLOCKED/UNKNOWN capability table, required IT approvals and a safe migration sequence. Do not attempt to authenticate Jira/Figma or create an issue/PR without explicit permission.

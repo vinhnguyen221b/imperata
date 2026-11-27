@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">Imperata symbol for light backgrounds</title>
+  <desc id="desc">A broken dark hexagon surrounds an I monogram, with a small red point below.</desc>
+  <g fill="none" stroke="#1A1A19" stroke-width="13" stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M119 26 42 72v40"/>
+    <path d="M42 133v49l77 45"/>
+    <path d="m137 26 77 46v40"/>
+    <path d="M214 133v49l-77 45"/>
+  </g>
+  <path fill="#1A1A19" d="M100 76h56l-6 12h-11v82h11l6 12h-56l6-12h11V88h-11z"/>
+  <path fill="#E84C3D" d="m118 217 10 25 10-25z"/>
+</svg>

@@ -1,0 +1,16 @@
+# Owned by this repository. The Imperata kit creates this file when it is missing and otherwise only adds the lines below that are missing.
+.env
+.env.*
+!.env.example
+.mcp.local.json
+# Browser test output and sign-in state: Playwright keeps traces, videos and screenshots in test-results/
+**/storage-state.json
+**/playwright/.auth/**
+**/test-results/**
+**/playwright-report/**
+# Imperata run board: rendered locally by scripts/render-run-board.mjs; sdlc/runs/*/board.md is committed
+sdlc/board.html
+# Output of Orchestrator sessions started by scripts/board-server.mjs --auto-run
+sdlc/.auto-run/
+# The address scripts/board-server.mjs serves the board at, while it runs
+sdlc/.board-server.json

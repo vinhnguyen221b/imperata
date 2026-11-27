@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">Imperata app icon</title>
+  <desc id="desc">The Imperata symbol in bone white and red on a dark rounded square.</desc>
+  <rect width="256" height="256" rx="44" fill="#181818"/>
+  <g transform="translate(34 34) scale(.734375)">
+    <g fill="none" stroke="#F2F0E9" stroke-width="13" stroke-linecap="butt" stroke-linejoin="miter">
+      <path d="M119 26 42 72v40"/>
+      <path d="M42 133v49l77 45"/>
+      <path d="m137 26 77 46v40"/>
+      <path d="M214 133v49l-77 45"/>
+    </g>
+    <path fill="#F2F0E9" d="M100 76h56l-6 12h-11v82h11l6 12h-56l6-12h11V88h-11z"/>
+    <path fill="#E84C3D" d="m118 217 10 25 10-25z"/>
+  </g>
+</svg>

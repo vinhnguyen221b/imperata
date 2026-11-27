@@ -1,0 +1,36 @@
+{
+  "name": "imperata",
+  "version": "1.0.0",
+  "about": "What imperata-kit.mjs installs into a project repository. mode kit: owned by the kit, replaced on update unless changed in the project. mode project: created once, then owned by the project. mode lines: lines added to a project file when missing. mode json: keys and list items added to a project JSON file when missing. tools: which agent tool needs the entry (default: both).",
+  "entries": [
+    { "src": "starter/.orchestra/schemas", "dest": ".orchestra/schemas" },
+    { "src": "starter/.orchestra/templates", "dest": ".orchestra/templates" },
+    { "src": "starter/.orchestra/test-rules.md", "dest": ".orchestra/test-rules.md" },
+    { "src": "starter/.orchestra/runs/EXAMPLE.run.json", "dest": ".orchestra/runs/EXAMPLE.run.json" },
+    { "src": "starter/.orchestra/project.md", "dest": ".orchestra/project.md", "mode": "project", "profile": true },
+    { "src": "starter/.orchestra/auto-run.json", "dest": ".orchestra/auto-run.json", "mode": "project" },
+    { "src": "starter/STARTER_GUIDE.md", "dest": ".orchestra/STARTER_GUIDE.md" },
+    { "src": "starter/scripts/validate-gates.mjs", "dest": "scripts/validate-gates.mjs" },
+    { "src": "starter/scripts/render-run-board.mjs", "dest": "scripts/render-run-board.mjs" },
+    { "src": "starter/scripts/board-server.mjs", "dest": "scripts/board-server.mjs" },
+    { "src": "starter/scripts/lock-tests.mjs", "dest": "scripts/lock-tests.mjs" },
+    { "src": "starter/scripts/record-run.mjs", "dest": "scripts/record-run.mjs" },
+    { "src": "starter/.github/workflows/pr-checks.yml.example", "dest": ".github/workflows/pr-checks.yml.example" },
+    { "src": "starter/.gitignore.example", "dest": ".gitignore", "mode": "lines", "header": "# Imperata" },
+
+    { "src": "starter/.github/agents", "dest": ".github/agents", "tools": ["copilot"] },
+    { "src": "starter/.github/skills", "dest": ".github/skills", "tools": ["copilot"] },
+    { "src": "starter/.github/instructions/orchestra.instructions.md", "dest": ".github/instructions/orchestra.instructions.md", "tools": ["copilot"] },
+    { "src": "starter/.mcp.example.json", "dest": ".orchestra/examples/copilot-cli.mcp.example.json", "tools": ["copilot"] },
+    { "src": "starter/.vscode/mcp.example.json", "dest": ".vscode/mcp.example.json", "tools": ["copilot"] },
+
+    { "src": "starter-claude-code/.claude/agents", "dest": ".claude/agents", "tools": ["claude"] },
+    { "src": "starter-claude-code/.claude/hooks", "dest": ".claude/hooks", "tools": ["claude"] },
+    { "src": "starter-claude-code/.claude/skills", "dest": ".claude/skills", "tools": ["claude"] },
+    { "src": "starter-claude-code/.claude/orchestra-rules.md", "dest": ".claude/orchestra-rules.md", "tools": ["claude"] },
+    { "src": "starter-claude-code/.claude/settings.json", "dest": ".claude/settings.json", "mode": "json", "tools": ["claude"] },
+    { "src": "starter-claude-code/CLAUDE.md", "dest": "CLAUDE.md", "mode": "lines", "header": "## Imperata", "tools": ["claude"] },
+    { "src": "starter-claude-code/.mcp.example.json", "dest": ".orchestra/examples/claude-code.mcp.example.json", "tools": ["claude"] }
+  ],
+  "retired": []
+}

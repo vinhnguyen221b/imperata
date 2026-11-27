@@ -1,0 +1,12 @@
+---
+name: imperata-verify
+description: Verify an Imperata run once its last task is built, with the whole suite and the test report, the calibration and the independent review, up to your acceptance; or repair it after you answered review findings. Send it in a new SDLC Orchestrator session, not one that worked on the run before, with the run ID after the command.
+argument-hint: <runId>
+disable-model-invocation: true
+---
+
+This command is for the SDLC Orchestrator. If you are not the SDLC Orchestrator, do nothing else: tell me to start a session as the Orchestrator (Claude Code: `claude --agent sdlc-orchestrator`; Copilot: the SDLC Orchestrator agent) and send the command there.
+
+Verify the run I name with this command, on its delivery branch and from the stage its manifest records; if I named no run, ask me which one first. If a task of its plan is not built yet, do nothing else: tell me which, and to send `/imperata-implement`. When the last task still waits for my check, this command is my word to go on, unless what I write after the run ID says otherwise: record it in that task's row under "Checked by the owner". Then request QA to run the whole suite and write the test report. For that delegation I name the model: the one your "Model per task" table gives for `standard`, whatever the levels of the tasks. Calibrate the tests, then request an independent read-only Code Reviewer. If QA or the review finds a defect, record its evidence and return a scoped fix, max two repair attempts, then have it tested and reviewed again. Where the whole suite and the review are done already and I answered review findings or requested changes, do not start over: repair what I answered, then have tested, calibrated and reviewed again what the repair calls for. For each repair I name the model as well: the one your table gives for the level the repair runs at. Pass a model wherever the delegation tool takes one. Preserve command outputs and do not claim Done or CI success without verification. In `pull-request` mode pass the tests gate only from the CI run on the delivery pull request, and run the gate validator with `--verify-remote`. Render the run board before each report. Stop at READY_FOR_ACCEPTANCE for human review, and repeat the board's "Check before you decide" list when you ask for acceptance.
+
+Write what I read in English, whatever language this command and my words are in.

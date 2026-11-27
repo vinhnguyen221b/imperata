@@ -1,0 +1,391 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Imperata run manifest",
+  "type": "object",
+  "required": [
+    "runId",
+    "productDocVersion",
+    "ticketRef",
+    "currentStage",
+    "revision",
+    "owner",
+    "updatedAt",
+    "approvalMode",
+    "approvals",
+    "artifactPaths",
+    "gateResults",
+    "openBlockers",
+    "externalEvidence"
+  ],
+  "properties": {
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "description": "Short name of the feature, shown on the run board"
+    },
+    "productDocVersion": {
+      "type": "string"
+    },
+    "ticketRef": {
+      "type": "string"
+    },
+    "dependsOn": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "description": "Runs that must be delivered before this one, by runId or runId prefix"
+    },
+    "currentStage": {
+      "enum": [
+        "NEW",
+        "ANALYSIS",
+        "AWAITING_BUSINESS_DECISION",
+        "READY_FOR_DESIGN_PLAN",
+        "READY_FOR_IMPLEMENTATION",
+        "IMPLEMENTING",
+        "VERIFYING",
+        "REVIEWING",
+        "FIX_REQUIRED",
+        "READY_FOR_ACCEPTANCE",
+        "DONE",
+        "BLOCKED",
+        "CANCELLED"
+      ]
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "approvalMode": {
+      "enum": [
+        "pull-request",
+        "local-record"
+      ]
+    },
+    "track": {
+      "enum": [
+        "full",
+        "light"
+      ],
+      "description": "full (the default when absent): every gate. light: a small, low-risk change the owner agreed to run without a separate plan approval; planApproval is WAIVED and the plan may hold at most 3 tasks, none of high complexity"
+    },
+    "kind": {
+      "enum": [
+        "feature",
+        "bug"
+      ],
+      "description": "feature (the default when absent), or bug: a run that fixes reported behaviour. A bug run is reproduced before its specification is approved (artifactPaths.reproduction, written by scripts/lock-tests.mjs reproduce)"
+    },
+    "confidential": {
+      "type": "boolean",
+      "description": "true when the defect must stay unpublished until its fix is delivered, as the owner decided at intake. A confidential run uses local-record mode: no branch is pushed and no pull request is opened before the fix"
+    },
+    "trackDecision": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "by",
+        "at",
+        "reason"
+      ],
+      "properties": {
+        "by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recordPath": {
+          "type": "string"
+        }
+      },
+      "description": "Required when track is light: who agreed to the light track, when, why the change fits it, and optionally the file that holds the owner's words"
+    },
+    "approvals": {
+      "type": "object",
+      "required": [
+        "businessApproval",
+        "planApproval",
+        "humanAcceptance"
+      ],
+      "properties": {
+        "businessApproval": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "kind",
+            "by",
+            "at"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "pull-request",
+                "local-record"
+              ]
+            },
+            "by": {
+              "type": "string",
+              "minLength": 1
+            },
+            "at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "prUrl": {
+              "type": "string"
+            },
+            "recordPath": {
+              "type": "string"
+            }
+          }
+        },
+        "planApproval": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "kind",
+            "by",
+            "at"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "pull-request",
+                "local-record"
+              ]
+            },
+            "by": {
+              "type": "string",
+              "minLength": 1
+            },
+            "at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "prUrl": {
+              "type": "string"
+            },
+            "recordPath": {
+              "type": "string"
+            }
+          }
+        },
+        "humanAcceptance": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "kind",
+            "by",
+            "at"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "pull-request",
+                "local-record"
+              ]
+            },
+            "by": {
+              "type": "string",
+              "minLength": 1
+            },
+            "at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "prUrl": {
+              "type": "string"
+            },
+            "recordPath": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "artifactPaths": {
+      "type": "object"
+    },
+    "gateResults": {
+      "type": "object",
+      "required": [
+        "businessApproval",
+        "planApproval",
+        "implementation",
+        "tests",
+        "review",
+        "humanAcceptance"
+      ],
+      "properties": {
+        "businessApproval": {
+          "enum": [
+            "PASSED",
+            "FAILED",
+            "NOT_RUN",
+            "BLOCKED",
+            "WAIVED"
+          ]
+        },
+        "planApproval": {
+          "enum": [
+            "PASSED",
+            "FAILED",
+            "NOT_RUN",
+            "BLOCKED",
+            "WAIVED"
+          ]
+        },
+        "implementation": {
+          "enum": [
+            "PASSED",
+            "FAILED",
+            "NOT_RUN",
+            "BLOCKED",
+            "WAIVED"
+          ]
+        },
+        "tests": {
+          "enum": [
+            "PASSED",
+            "FAILED",
+            "NOT_RUN",
+            "BLOCKED",
+            "WAIVED"
+          ]
+        },
+        "review": {
+          "enum": [
+            "PASSED",
+            "FAILED",
+            "NOT_RUN",
+            "BLOCKED",
+            "WAIVED"
+          ]
+        },
+        "humanAcceptance": {
+          "enum": [
+            "PASSED",
+            "FAILED",
+            "NOT_RUN",
+            "BLOCKED",
+            "WAIVED"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "openBlockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "externalEvidence": {
+      "type": "object",
+      "required": [
+        "prUrl",
+        "prMerged",
+        "trackerStatusVerified",
+        "ci"
+      ],
+      "properties": {
+        "prUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "prMerged": {
+          "type": "boolean"
+        },
+        "trackerStatusVerified": {
+          "type": "boolean"
+        },
+        "localMerge": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "commit",
+            "branch",
+            "by",
+            "at"
+          ],
+          "properties": {
+            "commit": {
+              "type": "string",
+              "minLength": 7
+            },
+            "branch": {
+              "type": "string",
+              "minLength": 1
+            },
+            "by": {
+              "type": "string",
+              "minLength": 1
+            },
+            "at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "description": "local-record mode: the commit on the main branch that holds the delivery the owner accepted, the branch, who merged it or asked for the merge, and when. The gate validator asks git whether the commit is on the branch and holds the locked tests"
+        },
+        "ci": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "runUrl",
+            "headSha",
+            "conclusion"
+          ],
+          "properties": {
+            "runUrl": {
+              "type": "string"
+            },
+            "headSha": {
+              "type": "string"
+            },
+            "conclusion": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
